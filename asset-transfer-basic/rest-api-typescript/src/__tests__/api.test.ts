@@ -500,6 +500,15 @@ describe('Asset Transfer Besic REST API', () => {
                 jobId: '1',
                 timestamp: expect.any(String),
             });
+            expect(mockJobQueue.add).toHaveBeenCalledWith(
+                'submit UpdateAsset transaction',
+                {
+                    mspid: config.mspIdOrg1,
+                    transactionName: 'UpdateAsset',
+                    transactionArgs: ['asset1', 'red', 5, 'Brad', 400],
+                    transactionIds: [],
+                }
+            );
         });
 
         it('PATCH should respond with 401 unauthorized json when an invalid API key is specified', async () => {

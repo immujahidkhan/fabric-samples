@@ -231,10 +231,10 @@ assetsRouter.put(
                 mspId,
                 'UpdateAsset',
                 assetId,
-                req.body.color,
-                req.body.size,
-                req.body.owner,
-                req.body.appraisedValue
+                req.body.Color,
+                req.body.Size,
+                req.body.Owner,
+                req.body.AppraisedValue
             );
 
             return res.status(ACCEPTED).json({
