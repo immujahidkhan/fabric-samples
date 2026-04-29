@@ -1,0 +1,19 @@
+{
+  "name": "bisl-proof-transparency-rest-api-js",
+  "version": "1.0.0",
+  "description": "REST API for BISL Fabric JavaScript chaincode",
+  "main": "app.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node app.js",
+    "dev": "node app.js",
+    "setup:wallet": "node setupWallet.js"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "fabric-network": "^2.2.20"
+  },
+  "license": "Apache-2.0"
+}

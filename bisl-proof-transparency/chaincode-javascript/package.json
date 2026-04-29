@@ -1,0 +1,23 @@
+{
+  "name": "bisl-proof-transparency-chaincode-js",
+  "version": "1.0.0",
+  "description": "BISL Proof of Transparency + Investor Chatboard chaincode in JavaScript",
+  "main": "index.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "lint": "eslint *.js lib/*.js",
+    "start": "fabric-chaincode-node start"
+  },
+  "dependencies": {
+    "fabric-contract-api": "~2.5",
+    "fabric-shim": "~2.5",
+    "json-stringify-deterministic": "^1.0.12",
+    "sort-keys-recursive": "^2.1.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0"
+  },
+  "license": "Apache-2.0"
+}

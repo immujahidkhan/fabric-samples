@@ -1,3 +1,8 @@
+curl -sSLO https://raw.githubusercontent.com/hyperledger/fabric/main/scripts/install-fabric.sh
+chmod +x install-fabric.sh
+./install-fabric.sh docker binary
+
+
 # Learning REST API with JavaScript
 
 This guide is a step-by-step way to learn REST APIs using the `asset-transfer-basic/rest-api-typescript` sample.
@@ -94,7 +99,7 @@ npm run start:dev
 This is the easiest request because it does not change state.
 
 ```bash
-curl --header "X-Api-Key: YOUR_KEY" http://localhost:3000/api/assets
+curl --header "X-Api-Key: D97C66C1-96D1-4FA2-AE15-7B0BB33B7617" http://localhost:3000/api/assets
 ```
 
 Use this to understand the shape of the data before you create or update anything.
