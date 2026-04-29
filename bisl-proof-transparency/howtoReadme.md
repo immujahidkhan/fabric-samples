@@ -1,19 +1,23 @@
-# How To Run and Deploy (JavaScript Chaincode + REST API)
+# How To Run and Deploy (Minimal JS Chaincode + REST API)
 
-This uses your current repo:
-- `/Users/mapmac/Documents/Github/Blockchain/fabric-samples`
+## Project Paths
+- Root: `/Users/mapmac/Documents/Github/Blockchain/fabric-samples`
+- Chaincode: `bisl-proof-transparency/chaincode-javascript`
+- REST API: `bisl-proof-transparency/rest-api-javascript`
 
-## Paths
-- Chaincode (JS): `bisl-proof-transparency/chaincode-javascript`
-- REST API (JS): `bisl-proof-transparency/rest-api-javascript`
-
-## Names used
+## Names
 - Channel: `mychannel`
 - Chaincode: `bislcc`
 
----
+## 1. Start Docker first
 
-## 1. Start Fabric Network
+If `network.sh` shows docker socket errors, start Docker Desktop and verify:
+
+```bash
+docker ps
+```
+
+## 2. Start network
 
 ```bash
 cd /Users/mapmac/Documents/Github/Blockchain/fabric-samples/test-network
@@ -21,9 +25,7 @@ cd /Users/mapmac/Documents/Github/Blockchain/fabric-samples/test-network
 ./network.sh up createChannel -ca
 ```
 
----
-
-## 2. Deploy JavaScript Chaincode
+## 3. Deploy JS chaincode
 
 ```bash
 cd /Users/mapmac/Documents/Github/Blockchain/fabric-samples/test-network
@@ -33,51 +35,22 @@ cd /Users/mapmac/Documents/Github/Blockchain/fabric-samples/test-network
   -ccl javascript
 ```
 
----
-
-## 3. Install REST API dependencies
+## 4. Setup and start REST API
 
 ```bash
 cd /Users/mapmac/Documents/Github/Blockchain/fabric-samples/bisl-proof-transparency/rest-api-javascript
 npm install
-```
-
----
-
-## 4. Import Org identities into wallet
-
-This script imports test-network admin users as API identities:
-- `appUserOrg1` (Org1MSP = Admin role)
-- `appUserOrg2` (Org2MSP = Agent role)
-
-```bash
-cd /Users/mapmac/Documents/Github/Blockchain/fabric-samples/bisl-proof-transparency/rest-api-javascript
 npm run setup:wallet
-```
-
----
-
-## 5. Start REST API
-
-```bash
-cd /Users/mapmac/Documents/Github/Blockchain/fabric-samples/bisl-proof-transparency/rest-api-javascript
 npm start
 ```
 
-API URL:
-- `http://localhost:4000`
-
-Health check:
+Health:
 
 ```bash
 curl http://localhost:4000/health
 ```
 
----
-
-## 6. Initialize RBAC (must run first)
-
-Admin = Org1MSP, Agent = Org2MSP
+## 5. Initialize RBAC (required)
 
 ```bash
 curl -X POST http://localhost:4000/invoke \
@@ -90,48 +63,27 @@ curl -X POST http://localhost:4000/invoke \
   }'
 ```
 
----
+## 6. Anchor dataset proof
 
-## 7. Full Flow Examples
-
-### 7.1 Agent submits stock data
+Example hash is placeholder. In production, compute from canonical JSON in backend.
 
 ```bash
 curl -X POST http://localhost:4000/invoke \
   -H 'Content-Type: application/json' \
   -d '{
-    "org":"org2",
-    "identity":"appUserOrg2",
-    "fcn":"SubmitStockData",
+    "org":"org1",
+    "identity":"appUserOrg1",
+    "fcn":"AnchorDataset",
     "args":[
       "sub-001",
+      "6f6cf6408eb6e7f5f4b8de3f6c6bb5b5d067f4f4ea0f540f4f39f8d4704f8c2a",
       "AAPL",
-      "Apple Inc",
-      "037833100",
-      "1000000",
-      "900000",
-      "850000",
-      "2025-10-01",
-      "TRANSFER_AGENT",
-      "PAY-REF-001"
+      "2025-10-01T00:00:00Z"
     ]
   }'
 ```
 
-### 7.2 Admin approves and anchors
-
-```bash
-curl -X POST http://localhost:4000/invoke \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "org":"org1",
-    "identity":"appUserOrg1",
-    "fcn":"ReviewSubmission",
-    "args":["sub-001","true","Verified by BISL admin"]
-  }'
-```
-
-### 7.3 Query published by ticker
+## 7. Read proof
 
 ```bash
 curl -X POST http://localhost:4000/query \
@@ -139,42 +91,12 @@ curl -X POST http://localhost:4000/query \
   -d '{
     "org":"org1",
     "identity":"appUserOrg1",
-    "fcn":"ListPublishedByTicker",
-    "args":["AAPL"]
+    "fcn":"GetDataset",
+    "args":["sub-001"]
   }'
 ```
 
----
-
-## 8. Stock Request API examples
-
-Create request:
-
-```bash
-curl -X POST http://localhost:4000/invoke \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "org":"org1",
-    "identity":"appUserOrg1",
-    "fcn":"CreateStockRequest",
-    "args":["req-aapl","AAPL","Apple Inc","user-101","Please list"]
-  }'
-```
-
-Update status (admin only):
-
-```bash
-curl -X POST http://localhost:4000/invoke \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "org":"org1",
-    "identity":"appUserOrg1",
-    "fcn":"UpdateStockRequestStatus",
-    "args":["req-aapl","REVIEWED"]
-  }'
-```
-
-List requests:
+## 8. Verify hash
 
 ```bash
 curl -X POST http://localhost:4000/query \
@@ -182,51 +104,15 @@ curl -X POST http://localhost:4000/query \
   -d '{
     "org":"org1",
     "identity":"appUserOrg1",
-    "fcn":"ListStockRequests",
-    "args":[]
-  }'
-```
-
----
-
-## 9. Chatboard API examples
-
-Upsert verified + subscribed user (admin):
-
-```bash
-curl -X POST http://localhost:4000/invoke \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "org":"org1",
-    "identity":"appUserOrg1",
-    "fcn":"UpsertUserProfile",
+    "fcn":"VerifyHash",
     "args":[
-      "user-101",
-      "investor@example.com",
-      "GOOGLE",
-      "ADVANCED",
-      "VERIFIED",
-      "MONTHLY",
-      "ACTIVE",
-      "2026-12-31T23:59:59Z"
+      "sub-001",
+      "6f6cf6408eb6e7f5f4b8de3f6c6bb5b5d067f4f4ea0f540f4f39f8d4704f8c2a"
     ]
   }'
 ```
 
-Post chat message:
-
-```bash
-curl -X POST http://localhost:4000/invoke \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "org":"org1",
-    "identity":"appUserOrg1",
-    "fcn":"PostChatMessage",
-    "args":["msg-001","AAPL","user-101","Strong fundamentals.",""]
-  }'
-```
-
-List ticker messages:
+## 9. List by ticker
 
 ```bash
 curl -X POST http://localhost:4000/query \
@@ -234,47 +120,12 @@ curl -X POST http://localhost:4000/query \
   -d '{
     "org":"org1",
     "identity":"appUserOrg1",
-    "fcn":"ListChatMessagesByTicker",
+    "fcn":"ListDatasetsByTicker",
     "args":["AAPL"]
   }'
 ```
 
----
-
-## 10. Generic API contract
-
-### POST `/invoke`
-Body:
-- `org`: `org1` or `org2`
-- `identity`: wallet identity label (example `appUserOrg1`)
-- `fcn`: chaincode function name
-- `args`: string array
-
-### POST `/query`
-Same as above, but calls `evaluateTransaction`.
-
----
-
-## 11. Troubleshooting
-
-- `Identity ... not found in wallet`
-  - Run `npm run setup:wallet` in REST API folder.
-
-- `RBAC is not initialized`
-  - Run `InitRBAC` first.
-
-- `access denied: admin MSP required`
-  - Use `org1` + `appUserOrg1`.
-
-- `access denied: agent MSP required`
-  - Use `org2` + `appUserOrg2`.
-
-- Deploy errors:
-  - Ensure Node/npm is available and rerun deploy command.
-
----
-
-## 12. Stop Network
+## 10. Stop network
 
 ```bash
 cd /Users/mapmac/Documents/Github/Blockchain/fabric-samples/test-network
