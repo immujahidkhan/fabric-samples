@@ -379,7 +379,8 @@ chmod +x bisl-proof-transparency/scripts/*.sh
 
 Upload `bisl-deploy.tar.gz` to your VPS and run `sudo ./scripts/install-vps.sh`.
 
-Full guide: [deploy/README-DEPLOY.md](./deploy/README-DEPLOY.md)
+Full guide: [deploy/README-DEPLOY.md](./deploy/README-DEPLOY.md)  
+**AWS (EC2) guide:** [deploy/README-AWS.md](./deploy/README-AWS.md)
 
 ---
 

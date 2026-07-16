@@ -15,6 +15,10 @@ bisl-deploy/
 
 **Excluded:** all other fabric-samples demos, legacy Go chaincode, node_modules.
 
+## AWS
+
+For Amazon EC2 step-by-step (security group, Elastic IP, HTTPS, NestJS), see **[README-AWS.md](./README-AWS.md)**.
+
 ## VPS requirements
 
 | Resource | Minimum |
