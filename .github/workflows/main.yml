@@ -1,0 +1,23 @@
+name: Deploy BISL
+
+on:
+  push:
+    branches: [ main ]      # or whatever your deploy branch is
+  workflow_dispatch:         # lets you trigger manually from the UI
+
+jobs:
+  deploy:
+    runs-on: self-hosted     # targets your EC2 runner
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy chaincode
+        working-directory: bisl-deploy
+        run: |
+          chmod +x scripts/*.sh
+          ./scripts/deploy-chaincode.sh
+
+      - name: Restart RPC
+        run: |
+          sudo systemctl restart bisl-rpc
