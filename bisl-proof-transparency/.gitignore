@@ -1,0 +1,11 @@
+# Generated deploy artifacts (do not commit)
+bisl-deploy/
+bisl-deploy.tar.gz
+
+# Dependencies
+rest-api-javascript/node_modules/
+chaincode-javascript/node_modules/
+
+# Secrets
+rest-api-javascript/.env
+rest-api-javascript/wallet/

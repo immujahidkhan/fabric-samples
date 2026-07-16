@@ -41,91 +41,110 @@ cd /Users/mapmac/Documents/Github/Blockchain/fabric-samples/test-network
 cd /Users/mapmac/Documents/Github/Blockchain/fabric-samples/bisl-proof-transparency/rest-api-javascript
 npm install
 npm run setup:wallet
+
+# Required for secured RPC (see README.md)
+export WRITE_API_KEY="$(openssl rand -hex 32)"
+export READ_API_KEY="$(openssl rand -hex 32)"
+export REQUIRE_AUTH=true
+
 npm start
 ```
 
-Health:
+Health (no API key):
 
 ```bash
 curl http://localhost:4000/health
 ```
 
+For local testing only (insecure):
+
+```bash
+export REQUIRE_AUTH=false
+npm start
+```
+
 ## 5. Initialize RBAC (required)
 
 ```bash
-curl -X POST http://localhost:4000/invoke \
+curl -X POST http://localhost:4000/v1/admin/init-rbac \
   -H 'Content-Type: application/json' \
+  -H "X-API-Key: $WRITE_API_KEY" \
   -d '{
-    "org":"org1",
-    "identity":"appUserOrg1",
-    "fcn":"InitRBAC",
-    "args":["Org1MSP","Org2MSP"]
+    "adminMSP":"Org1MSP",
+    "agentMSP":"Org2MSP"
   }'
 ```
 
 ## 6. Anchor dataset proof
 
-Example hash is placeholder. In production, compute from canonical JSON in backend.
+Send the full dataset metadata as JSON. `status` is stripped automatically and not stored on-chain.
+
+All write calls require `X-API-Key: $WRITE_API_KEY` when `REQUIRE_AUTH=true`.
+
+### POST /v1/proofs (recommended)
 
 ```bash
-curl -X POST http://localhost:4000/invoke \
+curl -X POST http://localhost:4000/v1/proofs \
   -H 'Content-Type: application/json' \
+  -H "X-API-Key: $WRITE_API_KEY" \
   -d '{
-    "org":"org1",
-    "identity":"appUserOrg1",
-    "fcn":"AnchorDataset",
-    "args":[
-      "sub-001",
-      "6f6cf6408eb6e7f5f4b8de3f6c6bb5b5d067f4f4ea0f540f4f39f8d4704f8c2a",
-      "AAPL",
-      "2025-10-01T00:00:00Z"
-    ]
+    "id": "6a57e3073d7defc1b170a9c9",
+    "agentId": "6a54ca3ab254a5ef16403aae",
+    "companyId": "6a57de973d7defc1b170a9a8",
+    "fileName": "Q3 Financials 2026",
+    "datasetType": "Financial Statements",
+    "description": "test description",
+    "fileUrl": "https://gateway.pinata.cloud/ipfs/bafkreibctxx3wdhon4bgoos43yuq2btt45na3qy45rbzrhekwksozj7bxm",
+    "ipfsHash": "bafkreibctxx3wdhon4bgoos43yuq2btt45na3qy45rbzrhekwksozj7bxm",
+    "fileMimeType": "application/octet-stream",
+    "fileSizeBytes": 18810,
+    "pinSize": 18810,
+    "submittedAt": "2026-07-15T19:44:07.217Z",
+    "createdAt": "2026-07-15T19:44:07.219Z",
+    "updatedAt": "2026-07-15T19:44:07.219Z"
   }'
 ```
 
-## 7. Read proof
+## 7. Read proof by id
+
+### GET /v1/proofs/:id
 
 ```bash
-curl -X POST http://localhost:4000/query \
+curl http://localhost:4000/v1/proofs/6a57e3073d7defc1b170a9c9 \
+  -H "X-API-Key: $READ_API_KEY"
+```
+
+## 8. List proofs by agentId
+
+### GET /v1/proofs/agent/:agentId
+
+```bash
+curl http://localhost:4000/v1/proofs/agent/6a54ca3ab254a5ef16403aae \
+  -H "X-API-Key: $READ_API_KEY"
+```
+
+## 9. List proofs by companyId
+
+### GET /v1/proofs/company/:companyId
+
+```bash
+curl http://localhost:4000/v1/proofs/company/6a57de973d7defc1b170a9a8 \
+  -H "X-API-Key: $READ_API_KEY"
+```
+
+## 10. Verify IPFS hash
+
+```bash
+curl -X POST http://localhost:4000/v1/proofs/verify \
   -H 'Content-Type: application/json' \
+  -H "X-API-Key: $READ_API_KEY" \
   -d '{
-    "org":"org1",
-    "identity":"appUserOrg1",
-    "fcn":"GetDataset",
-    "args":["sub-001"]
+    "id": "6a57e3073d7defc1b170a9c9",
+    "candidateHash": "bafkreibctxx3wdhon4bgoos43yuq2btt45na3qy45rbzrhekwksozj7bxm"
   }'
 ```
 
-## 8. Verify hash
-
-```bash
-curl -X POST http://localhost:4000/query \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "org":"org1",
-    "identity":"appUserOrg1",
-    "fcn":"VerifyHash",
-    "args":[
-      "sub-001",
-      "6f6cf6408eb6e7f5f4b8de3f6c6bb5b5d067f4f4ea0f540f4f39f8d4704f8c2a"
-    ]
-  }'
-```
-
-## 9. List by ticker
-
-```bash
-curl -X POST http://localhost:4000/query \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "org":"org1",
-    "identity":"appUserOrg1",
-    "fcn":"ListDatasetsByTicker",
-    "args":["AAPL"]
-  }'
-```
-
-## 10. Stop network
+## 11. Stop network
 
 ```bash
 cd /Users/mapmac/Documents/Github/Blockchain/fabric-samples/test-network

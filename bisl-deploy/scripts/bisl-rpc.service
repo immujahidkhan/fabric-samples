@@ -1,0 +1,18 @@
+[Unit]
+Description=BISL Proof Transparency RPC
+After=network.target docker.service
+Wants=docker.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/bisl-deploy/rpc
+EnvironmentFile=/opt/bisl-deploy/rpc/.env
+EnvironmentFile=/opt/bisl-deploy/rpc/.env.vps
+Environment=FABRIC_ROOT=/opt/bisl-deploy/fabric
+ExecStart=/usr/bin/node /opt/bisl-deploy/rpc/app.js
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
